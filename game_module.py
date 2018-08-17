@@ -42,6 +42,9 @@ class Game:
                         
     def _pressUp(self):    
         self._driver.find_element_by_tag_name("body"),send_keys(Keys.ARROW_UP)
+        
+    def _pressDown(self):
+        self._driver.find_element_by_tag_name("body").send_keys(Keys.ARROW_DOWN)
     
     def _get_score(self):
         score_array = self._driver.execute_script("return Runner.instance_.distanceMeter.digits")
@@ -58,5 +61,25 @@ class Game:
         self._driver.close()
         
         
+class Dino:
+    
+    def __init__(self):
+        self._game = Game()
+        self._jump()
+        time.sleep(0.5)
+        
+    def _jump(self):
+        self._game._pressUp()
+        
+    def _duck(self):
+        self._game._pressDown()
+        
+    def _isRunning(self):
+        return self._game._isPlaying()
+    
+    def _isCrashed(self):
+        return self._game._isCrashed()
+        
+
 if __name__ == "__main__":
     game = Game()
