@@ -41,7 +41,7 @@ class Game:
                         # skip learning at this time and make the model wait
                         
     def _pressUp(self):    
-        self._driver.find_element_by_tag_name("body"),send_keys(Keys.ARROW_UP)
+        self._driver.find_element_by_tag_name("body").send_keys(Keys.ARROW_UP)
         
     def _pressDown(self):
         self._driver.find_element_by_tag_name("body").send_keys(Keys.ARROW_DOWN)
@@ -82,4 +82,7 @@ class Dino:
         
 
 if __name__ == "__main__":
-    game = Game()
+    dino = Dino()
+    dino._jump()
+    time.sleep(0.5)
+    dino._jump()
