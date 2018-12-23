@@ -118,4 +118,64 @@ class Game_state:
             is_over = True
         return image, reward, is_over #return the Experience tuple
 
+def save_obj(obj, name ):
+    with open('objects/'+ name + '.pkl', 'wb') as f: #dump files into objects folder
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+def load_obj(name ):
+    with open('objects/' + name + '.pkl', 'rb') as f:
+        return pickle.load(f)
+def grab_screen(_driver = None):
+    screen =  np.array(ImageGrab.grab(bbox=(40,180,440,400))) #bbox = region of interset on the entire screen
+    image = process_img(screen)#processing image as required
+    return image
+
+def process_img(image):
+    #game is already in grey scale canvas, canny to get only edges and reduce unwanted objects(clouds)
+    image = cv2.resize(image, (0,0), fx = 0.15, fy = 0.10) # resale image dimensions
+    image = image[2:38,10:50] #img[y:y+h, x:x+w] #crop out the dino agent from the frame
+    image = cv2.Canny(image, threshold1 = 100, threshold2 = 200) #apply the canny edge detection
+    return  image
+def show_img(graphs = False):
+    """
+    Show images in new window
+    """
+    while True:
+        screen = (yield)
+        window_title = "logs" if graphs else "game_play"
+        cv2.namedWindow(window_title, cv2.WINDOW_NORMAL)        
+        imS = cv2.resize(screen, (800, 400)) 
+        cv2.imshow(window_title, screen)
+        if (cv2.waitKey(1) & 0xFF == ord('q')):
+            cv2.destroyAllWindows()
+            break
+
+#Intialize log structures from file if exists else create new
+loss_df = pd.read_csv(loss_file_path) if os.path.isfile(loss_file_path) else pd.DataFrame(columns =['loss'])
+scores_df = pd.read_csv(scores_file_path) if os.path.isfile(loss_file_path) else pd.DataFrame(columns = ['scores'])
+actions_df = pd.read_csv(actions_file_path) if os.path.isfile(actions_file_path) else pd.DataFrame(columns = ['actions'])
+
+# training variables saved as checkpoints to filesystem to resume training from the same step
+def init_cache():
+    """initial variable caching, done only once"""
+    save_obj(INITIAL_EPSILON,"epsilon")
+    t = 0
+    save_obj(t,"time")
+    D = deque()
+    save_obj(D,"D")
+
+#game parameters
+ACTIONS = 2 # possible actions: jump, do nothing
+GAMMA = 0.99 # decay rate of past observations original 0.99
+OBSERVATION = 50000. # timesteps to observe before training
+EXPLORE = 100000  # frames over which to anneal epsilon
+FINAL_EPSILON = 0.0001 # final value of epsilon
+INITIAL_EPSILON = 0.1 # starting value of epsilon
+REPLAY_MEMORY = 50000 # number of previous transitions to remember
+BATCH = 32 # size of minibatch
+FRAME_PER_ACTION = 1
+LEARNING_RATE = 1e-4
+img_rows , img_cols = 40,20
+img_channels = 4 #We stack 4 frames
+
 
